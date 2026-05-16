@@ -1,5 +1,8 @@
 import json
+import logging
 from typing import List, Dict, Tuple
+
+logger = logging.getLogger("Pandai")
 
 
 # ============================================================
@@ -146,10 +149,12 @@ Output ONLY the JSON array, no other text."""
                 stream=False
             )
             
-            result_text = response.choices[0].message.content
+            result_text = response.choices[0].message.content or ""
+            logger.info(f"[Story Splitter] LLM raw response ({len(result_text)} chars):\n{result_text[:2000]}")
             
             # 尝试提取JSON
             scenes = self._extract_json(result_text)
+            logger.info(f"[Story Splitter] Extracted {len(scenes)} scenes, keys: {[list(s.keys()) if isinstance(s, dict) else type(s).__name__ for s in scenes[:3]]}")
 
             # 统一字段名（LLM用自定义prompt时字段名不可控）
             scenes = [self._normalize_scene(s) for s in scenes]
