@@ -101,11 +101,17 @@ class Pandai_Story_Splitter:
         default_system_prompt = """You are a professional storyboard artist and visual director.
 Your task is to analyze a story/narrative text and split it into visual scenes for image generation.
 
+CRITICAL RULES:
+- Never use character names directly in visual_prompt. Always replace names with full character descriptions (appearance, age, gender, clothing, etc.).
+- Use natural language descriptions in visual_prompt, not structured tags.
+- Each visual_prompt MUST start with "masterpiece, best quality, score_7, " if not already present.
+
 For each scene, output a JSON object with:
 - "scene_id": scene number (1, 2, 3...)
 - "scene_title": brief title (2-5 words)
 - "scene_description": what's happening in this scene (1-2 sentences)
-- "visual_prompt": detailed image generation prompt in English (include characters, pose, expression, environment, lighting, mood)
+- "visual_prompt": detailed image generation prompt in English (replace all character names with their physical descriptions)
+- "negative_prompt": what to avoid in the image
 - "camera_angle": suggested camera angle (close-up, medium shot, wide shot, etc.)
 - "mood": emotional tone (happy, tense, peaceful, etc.)
 
@@ -115,7 +121,8 @@ Output a JSON array of scenes. Example:
     "scene_id": 1,
     "scene_title": "Morning Coffee",
     "scene_description": "Character sits at a café table, looking out the window.",
-    "visual_prompt": "a young woman with black hair sitting at a wooden café table, morning sunlight through window, coffee cup, thoughtful expression, warm lighting",
+    "visual_prompt": "masterpiece, best quality, score_7, a young woman with black hair sitting at a wooden café table, morning sunlight through window, coffee cup, thoughtful expression, warm lighting",
+    "negative_prompt": "worst quality, low quality, blurry, deformed",
     "camera_angle": "medium shot",
     "mood": "peaceful"
   }
