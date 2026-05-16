@@ -44,6 +44,11 @@ class Pandai_Story_Splitter:
                     "default": "",
                     "placeholder": "风格提示（可选），如：动漫风格，写实摄影，赛博朋克..."
                 }),
+                "system_prompt": ("STRING", {
+                    "multiline": True,
+                    "default": "",
+                    "placeholder": "自定义系统提示词（留空使用内置默认）。用于控制LLM如何拆分场景和生成prompt，例如：强调特定画风、指定输出格式、加入质量标签等"
+                }),
             }
         }
 
@@ -53,7 +58,8 @@ class Pandai_Story_Splitter:
     CATEGORY = "Pandai/Story"
 
     def split_story(self, api_config, model, story_text, split_mode="scene",
-                    max_scenes=8, character_list=None, style_hint=""):
+                    max_scenes=8, character_list=None, style_hint="",
+                    system_prompt=""):
 
         from openai import OpenAI
 
@@ -88,8 +94,9 @@ class Pandai_Story_Splitter:
             "beat": "节奏点分割 - 按情感/动作转折点切分，适合动态剧情"
         }
 
-        # 构建提示词
-        system_prompt = """You are a professional storyboard artist and visual director.
+        # 构建提示词 — 用户自定义 system_prompt 优先，否则用内置默认
+        if not system_prompt or system_prompt.strip() == "":
+            system_prompt = """You are a professional storyboard artist and visual director.
 Your task is to analyze a story/narrative text and split it into visual scenes for image generation.
 
 For each scene, output a JSON object with:

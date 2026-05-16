@@ -346,6 +346,11 @@ class Pandai_Style_Transfer_Prompt:
                     "step": 0.05,
                     "tooltip": "风格权重（0=只用内容，1=只用风格）"
                 }),
+                "system_prompt": ("STRING", {
+                    "multiline": True,
+                    "default": "",
+                    "placeholder": "自定义系统提示词（留空使用内置默认）。用于控制LLM如何融合风格和内容，例如：指定画风标签、质量要求、输出格式等"
+                }),
             }
         }
 
@@ -355,7 +360,7 @@ class Pandai_Style_Transfer_Prompt:
     CATEGORY = "Pandai/Image"
 
     def generate_transfer_prompt(self, api_config, model, content_description, style_description,
-                                  character_list=None, style_weight=0.6):
+                                  character_list=None, style_weight=0.6, system_prompt=""):
 
         from openai import OpenAI
 
@@ -376,7 +381,8 @@ class Pandai_Style_Transfer_Prompt:
                 char_parts.append(desc)
             character_info = "Characters: " + "; ".join(char_parts)
 
-        system_prompt = """You are an expert at combining artistic styles with image content.
+        if not system_prompt or system_prompt.strip() == "":
+            system_prompt = """You are an expert at combining artistic styles with image content.
 Generate a Stable Diffusion prompt that applies the style from one image to the content of another.
 
 Output format:
