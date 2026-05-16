@@ -185,8 +185,23 @@ Output ONLY the JSON array, no other text."""
         def _normalize(obj):
             """把各种JSON结构统一成 [{}, {}, ...] 格式"""
             if isinstance(obj, list):
-                # 列表中每个元素都必须是dict
-                return [item for item in obj if isinstance(item, dict)]
+                dicts = [item for item in obj if isinstance(item, dict)]
+                if dicts:
+                    return dicts
+                # LLM返回了纯字符串数组（没按格式），包装成标准scene结构
+                strings = [item for item in obj if isinstance(item, str)]
+                if strings:
+                    return [
+                        {
+                            "scene_id": i + 1,
+                            "scene_title": f"Scene {i + 1}",
+                            "scene_description": s[:100],
+                            "visual_prompt": s,
+                            "camera_angle": "medium shot",
+                            "mood": "neutral"
+                        }
+                        for i, s in enumerate(strings)
+                    ]
             if isinstance(obj, dict):
                 # 常见包装：{"scenes": [...]}, {"data": [...]}, {"result": [...]}
                 for v in obj.values():
