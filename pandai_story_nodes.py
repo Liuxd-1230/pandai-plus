@@ -150,6 +150,9 @@ Output ONLY the JSON array, no other text."""
             
             # 尝试提取JSON
             scenes = self._extract_json(result_text)
+
+            # 统一字段名（LLM用自定义prompt时字段名不可控）
+            scenes = [self._normalize_scene(s) for s in scenes]
             
             if not scenes:
                 # 如果提取失败，返回错误信息
@@ -241,6 +244,52 @@ Output ONLY the JSON array, no other text."""
                 pass
 
         return []
+
+    # LLM用不同prompt时字段名五花八门，统一映射到标准字段
+    _KEY_MAP = {
+        # scene_id
+        "scene_id": "scene_id", "id": "scene_id", "number": "scene_id",
+        "scene_number": "scene_id", "no": "scene_id", "index": "scene_id",
+        # scene_title
+        "scene_title": "scene_title", "title": "scene_title", "name": "scene_title",
+        "heading": "scene_title",
+        # scene_description
+        "scene_description": "scene_description", "description": "scene_description",
+        "desc": "scene_description", "summary": "scene_description",
+        "scene_desc": "scene_description", "narrative": "scene_description",
+        # visual_prompt
+        "visual_prompt": "visual_prompt", "prompt": "visual_prompt",
+        "image_prompt": "visual_prompt", "img_prompt": "visual_prompt",
+        "sd_prompt": "visual_prompt", "generation_prompt": "visual_prompt",
+        # camera_angle
+        "camera_angle": "camera_angle", "camera": "camera_angle", "shot": "camera_angle",
+        "angle": "camera_angle", "shot_type": "camera_angle", "framing": "camera_angle",
+        # mood
+        "mood": "mood", "emotion": "mood", "tone": "mood",
+        "atmosphere": "mood", "feeling": "mood",
+    }
+
+    def _normalize_scene(self, scene: dict) -> dict:
+        """把LLM返回的各种字段名统一成标准格式"""
+        result = {}
+        for k, v in scene.items():
+            key = self._KEY_MAP.get(k.lower().strip(), k.lower().strip())
+            result[key] = v
+
+        # 补齐缺失字段
+        defaults = {
+            "scene_id": "?",
+            "scene_title": "?",
+            "scene_description": "?",
+            "visual_prompt": "",
+            "camera_angle": "medium shot",
+            "mood": "neutral",
+        }
+        for field, fallback in defaults.items():
+            if field not in result or not result[field]:
+                result[field] = fallback
+
+        return result
 
 
 # ============================================================
