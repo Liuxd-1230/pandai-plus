@@ -179,30 +179,49 @@ Output ONLY the JSON array, no other text."""
         return (scenes, summary)
 
     def _extract_json(self, text: str) -> List[Dict]:
-        """从AI响应中提取JSON数组"""
-        # 尝试直接解析
+        """从AI响应中提取JSON数组，兼容多种格式"""
+        import re
+
+        def _normalize(obj):
+            """把各种JSON结构统一成 [{}, {}, ...] 格式"""
+            if isinstance(obj, list):
+                # 列表中每个元素都必须是dict
+                return [item for item in obj if isinstance(item, dict)]
+            if isinstance(obj, dict):
+                # 常见包装：{"scenes": [...]}, {"data": [...]}, {"result": [...]}
+                for v in obj.values():
+                    if isinstance(v, list):
+                        return _normalize(v)
+            return []
+
+        # 1. 直接解析整个文本
         try:
-            result = json.loads(text)
-            if isinstance(result, list):
-                return result
+            result = json.loads(text.strip())
+            normalized = _normalize(result)
+            if normalized:
+                return normalized
         except:
             pass
 
-        # 尝试找JSON块
-        import re
-        # 找 ```json ... ``` 块
+        # 2. 找 ```json ... ``` 块
         json_match = re.search(r'```json\s*(.*?)\s*```', text, re.DOTALL)
         if json_match:
             try:
-                return json.loads(json_match.group(1))
+                result = json.loads(json_match.group(1))
+                normalized = _normalize(result)
+                if normalized:
+                    return normalized
             except:
                 pass
 
-        # 找 [ ... ] 块
+        # 3. 找 [ ... ] 块
         json_match = re.search(r'\[.*\]', text, re.DOTALL)
         if json_match:
             try:
-                return json.loads(json_match.group(0))
+                result = json.loads(json_match.group(0))
+                normalized = _normalize(result)
+                if normalized:
+                    return normalized
             except:
                 pass
 
