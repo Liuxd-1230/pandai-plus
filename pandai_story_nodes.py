@@ -97,9 +97,8 @@ class Pandai_Story_Splitter:
             "beat": "节奏点分割 - 按情感/动作转折点切分，适合动态剧情"
         }
 
-        # 构建提示词 — 用户自定义 system_prompt 优先，否则用内置默认
-        if not system_prompt or system_prompt.strip() == "":
-            system_prompt = """You are a professional storyboard artist and visual director.
+        # 构建提示词 — 内置默认保底，用户自定义追加在后面
+        default_system_prompt = """You are a professional storyboard artist and visual director.
 Your task is to analyze a story/narrative text and split it into visual scenes for image generation.
 
 For each scene, output a JSON object with:
@@ -121,6 +120,12 @@ Output a JSON array of scenes. Example:
     "mood": "peaceful"
   }
 ]"""
+
+        # 用户自定义追加到内置默认后面
+        if system_prompt and system_prompt.strip():
+            system_prompt = default_system_prompt + "\n\nAdditional instructions:\n" + system_prompt.strip()
+        else:
+            system_prompt = default_system_prompt
 
         user_prompt = f"""Please split the following story into {max_scenes} or fewer visual scenes.
 
