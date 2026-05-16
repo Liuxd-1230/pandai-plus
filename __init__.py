@@ -8,8 +8,11 @@ from .pandai_nodes import NODE_CLASS_MAPPINGS as NEW_NODES
 # Story/分镜 nodes
 from .pandai_story_nodes import NODE_CLASS_MAPPINGS as STORY_NODES
 
+# Image nodes
+from .pandai_image_nodes import NODE_CLASS_MAPPINGS as IMAGE_NODES
+
 # Merge all node mappings
-NODE_CLASS_MAPPINGS = {**DSK_NODES, **DOCX_NODES, **NEW_NODES, **STORY_NODES}
+NODE_CLASS_MAPPINGS = {**DSK_NODES, **DOCX_NODES, **NEW_NODES, **STORY_NODES, **IMAGE_NODES}
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     # Original nodes (keep for backward compatibility)
@@ -30,6 +33,11 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "Pandai_Scene_Selector": "Pandai 场景选择",
     "Pandai_Scene_List_View": "Pandai 场景列表查看",
     "Pandai_Scene_Batch_Output": "Pandai 批量Prompt输出",
+    
+    # Image nodes
+    "Pandai_Image_Analyzer": "Pandai 图片分析",
+    "Pandai_Img2Img_Prompt": "Pandai 图生图Prompt",
+    "Pandai_Style_Transfer_Prompt": "Pandai 风格迁移Prompt",
 }
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
