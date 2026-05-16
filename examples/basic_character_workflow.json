@@ -1,0 +1,106 @@
+{
+  "last_node_id": 8,
+  "last_link_id": 7,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "Pandai_API_Config",
+      "pos": [100, 200],
+      "size": [300, 150],
+      "properties": {},
+      "widgets_values": [
+        "https://api.deepseek.com",
+        "your-api-key-here",
+        "deepseek-chat"
+      ],
+      "inputs": [],
+      "outputs": [
+        {"name": "api_config", "type": "API_CONFIG", "links": [1]}
+      ]
+    },
+    {
+      "id": 2,
+      "type": "Pandai_API_Test",
+      "pos": [100, 400],
+      "size": [300, 100],
+      "properties": {},
+      "widgets_values": ["both"],
+      "inputs": [
+        {"name": "api_config", "type": "API_CONFIG", "link": 2}
+      ],
+      "outputs": [
+        {"name": "test_result", "type": "STRING", "links": null},
+        {"name": "models_list", "type": "STRING", "links": null}
+      ]
+    },
+    {
+      "id": 3,
+      "type": "Pandai_Character_Anchor",
+      "pos": [500, 100],
+      "size": [300, 200],
+      "properties": {},
+      "widgets_values": [
+        "小红",
+        "female",
+        "young_adult",
+        "黑色长发，大眼睛，瓜子脸，皮肤白皙",
+        "白色连衣裙",
+        "左脸有酒窝"
+      ],
+      "inputs": [],
+      "outputs": [
+        {"name": "character_list", "type": "CHARACTER_LIST", "links": [3]},
+        {"name": "character_prompt", "type": "STRING", "links": null}
+      ]
+    },
+    {
+      "id": 4,
+      "type": "Pandai_DSK_Chat",
+      "pos": [900, 200],
+      "size": [400, 200],
+      "properties": {},
+      "widgets_values": [
+        "deepseek-chat",
+        "你是一个专业的AI绘画提示词生成器。根据用户描述生成适合Stable Diffusion的英文提示词。",
+        "画一张她站在海边看日落的图",
+        4096,
+        0.7,
+        1.0,
+        0,
+        0,
+        "prepend_to_user",
+        "sliding_window",
+        10
+      ],
+      "inputs": [
+        {"name": "api_config", "type": "API_CONFIG", "link": 1},
+        {"name": "character_list", "type": "CHARACTER_LIST", "link": 3},
+        {"name": "chat_history", "type": "CHAT_HISTORY", "link": null}
+      ],
+      "outputs": [
+        {"name": "response", "type": "STRING", "links": null},
+        {"name": "chat_history", "type": "CHAT_HISTORY", "links": null}
+      ]
+    }
+  ],
+  "links": [
+    [1, 1, 0, 4, 0, "API_CONFIG"],
+    [2, 1, 0, 2, 0, "API_CONFIG"],
+    [3, 3, 0, 4, 1, "CHARACTER_LIST"]
+  ],
+  "groups": [
+    {
+      "title": "API Configuration",
+      "bounding": [80, 150, 340, 380],
+      "color": "#3f789e"
+    },
+    {
+      "title": "Character Definition",
+      "bounding": [480, 50, 340, 280],
+      "color": "#2a363b"
+    }
+  ],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}

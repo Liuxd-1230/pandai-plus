@@ -1,0 +1,5 @@
+python-docx>=0.8.11
+chardet>=4.0.0
+openai>=1.0.0
+langdetect>=1.0.9
+zipfile36>=0.1.3
