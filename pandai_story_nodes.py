@@ -174,6 +174,9 @@ Output ONLY the JSON array, no other text."""
                     summary_lines.append(f"  描述: {scene.get('scene_description', '?')}")
                     summary_lines.append(f"  镜头: {scene.get('camera_angle', '?')} | 情绪: {scene.get('mood', '?')}")
                     summary_lines.append(f"  Prompt: {scene.get('visual_prompt', '?')[:80]}...")
+                    neg = scene.get('negative_prompt', '')
+                    if neg:
+                        summary_lines.append(f"  Negative: {neg[:60]}...")
                     summary_lines.append("")
                 summary = "\n".join(summary_lines)
 
@@ -266,12 +269,16 @@ Output ONLY the JSON array, no other text."""
         "visual_prompt": "visual_prompt", "prompt": "visual_prompt",
         "image_prompt": "visual_prompt", "img_prompt": "visual_prompt",
         "sd_prompt": "visual_prompt", "generation_prompt": "visual_prompt",
+        "positive_prompt": "visual_prompt", "pos_prompt": "visual_prompt",
         # camera_angle
         "camera_angle": "camera_angle", "camera": "camera_angle", "shot": "camera_angle",
         "angle": "camera_angle", "shot_type": "camera_angle", "framing": "camera_angle",
         # mood
         "mood": "mood", "emotion": "mood", "tone": "mood",
         "atmosphere": "mood", "feeling": "mood",
+        # negative_prompt
+        "negative_prompt": "negative_prompt", "neg_prompt": "negative_prompt",
+        "negative": "negative_prompt",
     }
 
     def _normalize_scene(self, scene: dict) -> dict:
@@ -287,6 +294,7 @@ Output ONLY the JSON array, no other text."""
             "scene_title": "?",
             "scene_description": "?",
             "visual_prompt": "",
+            "negative_prompt": "",
             "camera_angle": "medium shot",
             "mood": "neutral",
         }
@@ -321,8 +329,8 @@ class Pandai_Scene_Selector:
             },
         }
 
-    RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING", "INT")
-    RETURN_NAMES = ("visual_prompt", "scene_title", "scene_description", "mood", "total_scenes")
+    RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING", "STRING", "INT")
+    RETURN_NAMES = ("visual_prompt", "negative_prompt", "scene_title", "scene_description", "mood", "total_scenes")
     FUNCTION = "select_scene"
     CATEGORY = "Pandai/Story"
 
@@ -330,7 +338,7 @@ class Pandai_Scene_Selector:
         total = len(scene_list)
         
         if total == 0:
-            return ("", "Empty", "No scenes", "neutral", 0)
+            return ("", "", "Empty", "No scenes", "neutral", 0)
         
         # 防止越界
         if scene_index >= total:
@@ -339,11 +347,12 @@ class Pandai_Scene_Selector:
         scene = scene_list[scene_index]
         
         visual_prompt = scene.get("visual_prompt", "")
+        negative_prompt = scene.get("negative_prompt", "")
         scene_title = scene.get("scene_title", f"Scene {scene_index + 1}")
         scene_description = scene.get("scene_description", "")
         mood = scene.get("mood", "neutral")
         
-        return (visual_prompt, scene_title, scene_description, mood, total)
+        return (visual_prompt, negative_prompt, scene_title, scene_description, mood, total)
 
 
 # ============================================================
@@ -384,6 +393,9 @@ class Pandai_Scene_List_View:
             lines.append(f"  描述: {desc}")
             lines.append(f"  镜头: {angle} | 情绪: {mood}")
             lines.append(f"  Prompt: {prompt}")
+            neg = scene.get("negative_prompt", "")
+            if neg:
+                lines.append(f"  Negative: {neg}")
             lines.append("")
         
         return ("\n".join(lines), total)
