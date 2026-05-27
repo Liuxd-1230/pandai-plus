@@ -351,6 +351,11 @@ class Pandai_DSK_Chat:
                 "top_p": ("FLOAT", {"default": 1.0, "min": 0, "max": 1, "step": 0.05}),
                 "presence_penalty": ("FLOAT", {"default": 0, "min": -2, "max": 2, "step": 0.1}),
                 "frequency_penalty": ("FLOAT", {"default": 0, "min": -2, "max": 2, "step": 0.1}),
+                "prompt_file_content": ("STRING", {
+                    "default": "",
+                    "multiline": True,
+                    "tooltip": "从 Prompt 文件加载节点连接，内容会注入到系统提示词中作为生成规则"
+                }),
             }
         }
 
@@ -364,7 +369,8 @@ class Pandai_DSK_Chat:
              character_list=None, character_prompt_mode="prepend_to_user",
              chat_history=None, history_mode="sliding_window", max_history_turns=10,
              enable_thinking="disable",
-             top_p=1.0, presence_penalty=0, frequency_penalty=0):
+             top_p=1.0, presence_penalty=0, frequency_penalty=0,
+             prompt_file_content=""):
 
         from openai import OpenAI
 
@@ -406,8 +412,11 @@ class Pandai_DSK_Chat:
 
         # 1. 系统提示词
         final_system_prompt = system_prompt
+        # 注入 Prompt 文件内容（作为生成规则）
+        if prompt_file_content and prompt_file_content.strip():
+            final_system_prompt = f"{final_system_prompt}\n\n--- Prompt Rules ---\n{prompt_file_content.strip()}\n--- End Rules ---"
         if character_prompt and character_prompt_mode == "prepend_to_system":
-            final_system_prompt = f"{character_prompt}\n\n{system_prompt}"
+            final_system_prompt = f"{character_prompt}\n\n{final_system_prompt}"
         messages.append({"role": "system", "content": final_system_prompt})
 
         # 2. 处理历史记录 - 关键修复
@@ -565,6 +574,60 @@ class Pandai_History_View:
 
 
 # ============================================================
+# Prompt 文件加载节点
+# ============================================================
+class Pandai_Prompt_File_Loader:
+    """从文件加载 Prompt 模板/规则，注入到 LLM 对话中"""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "file_path": ("STRING", {
+                    "default": "",
+                    "multiline": False,
+                    "placeholder": "输入 prompt 文件路径（如 C:/prompts/anime_rules.txt）",
+                    "tooltip": "文本文件路径，内容会作为 prompt 规则注入到 LLM"
+                }),
+            },
+            "optional": {
+                "file_content": ("STRING", {
+                    "default": "",
+                    "multiline": True,
+                    "tooltip": "也可直接输入内容（优先级低于文件路径）"
+                }),
+            }
+        }
+
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("prompt_content",)
+    FUNCTION = "load_file"
+    CATEGORY = "Pandai/Config"
+
+    def load_file(self, file_path, file_content=""):
+        # 优先使用文件内容输入
+        if file_content and file_content.strip():
+            return (file_content,)
+
+        # 尝试读取文件
+        if not file_path or not file_path.strip():
+            return ("",)
+
+        file_path = file_path.strip()
+        try:
+            # 支持 Windows 路径
+            import os
+            file_path = os.path.normpath(file_path)
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            return (content,)
+        except FileNotFoundError:
+            return (f"[错误] 文件不存在: {file_path}",)
+        except Exception as e:
+            return (f"[错误] 读取文件失败: {str(e)}",)
+
+
+# ============================================================
 # Register all nodes
 # ============================================================
 NODE_CLASS_MAPPINGS = {
@@ -575,6 +638,7 @@ NODE_CLASS_MAPPINGS = {
     "Pandai_DSK_Chat": Pandai_DSK_Chat,
     "Pandai_History_Clear": Pandai_History_Clear,
     "Pandai_History_View": Pandai_History_View,
+    "Pandai_Prompt_File_Loader": Pandai_Prompt_File_Loader,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -585,4 +649,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "Pandai_DSK_Chat": "Pandai LLM 对话",
     "Pandai_History_Clear": "Pandai 历史清空",
     "Pandai_History_View": "Pandai 历史查看",
+    "Pandai_Prompt_File_Loader": "Pandai Prompt 文件加载",
 }

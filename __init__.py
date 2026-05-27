@@ -19,6 +19,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "Pandai_DSK_Chat": "Pandai LLM 对话",
     "Pandai_History_Clear": "Pandai 历史清空",
     "Pandai_History_View": "Pandai 历史查看",
+    "Pandai_Prompt_File_Loader": "Pandai Prompt 文件加载",
     
     # Story/分镜 nodes
     "Pandai_Story_Splitter": "Pandai 剧情分镜",
